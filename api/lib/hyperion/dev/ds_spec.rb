@@ -326,6 +326,15 @@ shared_examples_for 'Datastore' do
       found_shirts[0].should == shirt
     end
 
+    it 'filters on multiple foreign keys' do
+      account_keys = (1..2).map { api.save(:kind => :account)[:key] }
+      shirt1 = api.save(:kind => :shirt, :account_key => account_keys[0])
+      shirt2 = api.save(:kind => :shirt, :account_key => account_keys[1])
+      found_shirts = api.find_by_kind(:shirt, :filters => [[:account_key, 'in', account_keys]])
+      found_shirts.should include(shirt1)
+      found_shirts.should include(shirt2)
+    end
+
     it 'unpacks nil foreign keys' do
       shirt  = api.save(:kind => :shirt, :account_key => nil)
       shirt[:account_key].should be_nil
