@@ -73,6 +73,17 @@ module Hyperion
   def self.save_many(records)
     unpack_records(datastore.save(pack_records(records)))
   end
+  
+  # Creates a record.  While save delegates to a create or update based on the result
+  # of new?, this always creates.  This allows you to set the key explicitly
+  def self.create(record)
+    create_many([record]).first
+  end
+  
+  # Create many records at once
+  def self.create_many(records)
+    unpack_records(datastore.create(pack_records(records)))
+  end
 
   # Returns true if the record is new (not saved/doesn't have a :key), false otherwise.
   def self.new?(record)

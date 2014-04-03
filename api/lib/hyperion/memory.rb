@@ -17,6 +17,15 @@ module Hyperion
         record
       end
     end
+    
+    def create(records)
+      records.map do |record|
+        raise 'duplicate key' if record[:key] && store.key?(record[:key])
+        record[:key] ||= generate_key
+        store[record[:key]] = record
+        record
+      end
+    end
 
     def find_by_key(key)
       store[key]

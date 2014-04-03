@@ -16,7 +16,13 @@ module Hyperion
 
       def save(records)
         records.map do |record|
-          Hyperion.new?(record) ? create(record) : update(record)
+          Hyperion.new?(record) ? create_one(record) : update_one(record)
+        end
+      end
+      
+      def create(records)
+        records.map do |record|
+          create_one(record)
         end
       end
 
@@ -68,13 +74,16 @@ module Hyperion
 
       private
 
-      def create(record)
+      def create_one(record)
         kind = record[:kind]
-        robject = bucket(kind).new
+        riak_key = record.key?(:key) ?
+          pack_key(kind, record[:key]) :
+          nil
+        robject = bucket(kind).new(riak_key)
         store(kind, robject, record_to_db(record))
       end
 
-      def update(record)
+      def update_one(record)
         kind, riak_key = Hyperion::Key.decompose_key(record[:key])
         robject = bucket(kind).get(riak_key)
         store(kind, robject, robject.data.merge(record_to_db(record)))

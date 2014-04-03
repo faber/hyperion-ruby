@@ -13,6 +13,9 @@ module Hyperion
 
       def build_insert(record)
         record = record.dup
+        if record.key?(:key)
+          table, record[:id] = Key.decompose_key(record.delete(:key))
+        end
         table = format_table(record.delete(:kind))
         unless record.empty?
           columns = format_array(record.keys.map {|c| format_column(c) })

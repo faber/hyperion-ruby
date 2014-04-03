@@ -1,10 +1,12 @@
 module Hyperion
   class FakeDs
 
-    attr_accessor :saved_records, :queries, :key_queries, :returns, :key_pack_queries,:key_unpack_queries
+    attr_accessor :saved_records, :created_records, :queries, :key_queries, 
+      :returns, :key_pack_queries,:key_unpack_queries
 
     def initialize(opts={})
       @saved_records = []
+      @created_records = []
       @returns = []
       @queries = []
       @key_queries = []
@@ -14,6 +16,11 @@ module Hyperion
 
     def save(records)
       @saved_records += records
+      returns.shift || []
+    end
+    
+    def create(records)
+      @created_records += records
       returns.shift || []
     end
 

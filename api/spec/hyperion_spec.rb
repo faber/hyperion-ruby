@@ -94,6 +94,28 @@ describe Hyperion do
         example.run
       end
     end
+    
+    context 'create' do
+      it 'creates a record, assigning a key' do
+        record = {:kind => 'one'}
+        api.create(record)
+        api.datastore.created_records.first.should == record
+      end
+      
+      context 'record packing on create' do
+        include_examples 'record packing', lambda { |record| 
+          Hyperion.create(record)
+          Hyperion.datastore.created_records.last
+        }
+      end
+      
+      context 'record unpacking on return from datastore' do
+        include_examples 'record unpacking', lambda {|record|
+          Hyperion.datastore.returns = [[record]]
+          Hyperion.create({})
+        }
+      end
+    end
 
     context 'save' do
 

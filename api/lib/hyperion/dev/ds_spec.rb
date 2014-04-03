@@ -65,6 +65,64 @@ shared_examples_for 'Datastore' do
     end
 
   end
+  
+  context 'create' do
+    
+    it 'saves a hash without a key and returns it' do
+      record = api.create({:kind => 'testing', :name => 'ann'})
+      record[:kind].should == 'testing'
+      record[:name].should == 'ann'
+    end
+    
+    it 'assigns a key to records without keys' do
+      record = api.create({:kind => 'testing', :name => 'ann'})
+      record[:key].should_not be_nil
+    end
+    
+    it 'saves a hash with an unpacked key and returns it' do
+      unpacked_key = api.datastore.unpack_key('testing', 123)
+      record = api.create({:kind => 'testing', :key => unpacked_key, :name => 'ann'})
+      record[:kind].should == 'testing'
+      record[:name].should == 'ann'
+      record[:key].should == unpacked_key
+    end
+
+    it 'saves an empty record' do
+      record = api.create({:kind => 'testing'})
+      record[:kind].should == 'testing'
+    end
+
+    it 'raises an error with an existing record' do
+      record = api.create({:kind => 'other_testing', :name => 'ann'})
+      expect do
+        api.create({:kind => 'other_testing', :key => record[:key]}, :name => 'james')
+      end.to raise_error
+    end
+
+    def ten_testing_records(kind = 'testing')
+      (1..10).to_a.map do |i|
+        {:kind => kind, :name => i.to_s}
+      end
+    end
+
+    it 'assigns unique keys to each record' do
+      keys = ten_testing_records.map do |record|
+        api.create(record)[:key]
+      end
+      unique_keys = Set.new(keys)
+      unique_keys.length.should == 10
+    end
+
+    it 'can create many records' do
+      saved_records = api.create_many(ten_testing_records)
+      saved_records.length.should == 10
+      saved_names = Set.new(saved_records.map { |record| record[:name] })
+      found_records = api.find_by_kind('testing')
+      found_records.length.should == 10
+      found_names = Set.new(found_records.map { |record| record[:name] })
+      found_names.should == saved_names
+    end
+  end
 
   def remove_nils(record)
     record.reduce({}) do |non_nil_record, (field, value)|

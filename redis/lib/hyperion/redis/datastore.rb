@@ -13,7 +13,13 @@ module Hyperion
 
       def save(records)
         records.map do |record|
-          Hyperion.new?(record) ? create(record) : update(record)
+          Hyperion.new?(record) ? create_one(record) : update_one(record)
+        end
+      end
+      
+      def create(records)
+        records.map do |record|
+          create_one(record)
         end
       end
 
@@ -35,9 +41,11 @@ module Hyperion
       end
 
       def delete_by_key(key)
+        kind = @client.hget(key, "kind")
         @client.multi do
           @client.del(key)
           @client.del(meta_key(key))
+          @client.srem(kind_set_key(kind), key)
         end
         nil
       end
@@ -61,15 +69,14 @@ module Hyperion
 
       private
 
-      def create(record)
+      def create_one(record)
         kind = record[:kind]
-        key = Hyperion::Key.generate_id
-        record[:key] = "#{kind}:#{key}"
+        record[:key] ||= Hyperion::Key.generate_id
         persist_record(record)
         record
       end
 
-      def update(record)
+      def update_one(record)
         persist_record(record)
         record
       end
@@ -87,11 +94,13 @@ module Hyperion
         @client.multi do
           @client.hmset(key, *json_record.to_a.flatten)
           @client.hmset(meta_key(key), *meta_record(record).to_a.flatten)
+          @client.sadd(kind_set_key(record[:kind]), key)
         end
       end
 
       def find_by_kind(kind)
-        keys = @client.keys "#{kind}:*"
+        # keys = @client.keys "#{kind}:*"
+        keys = @client.smembers kind_set_key(kind)
         @client.multi do
           keys.each do |key|
             @client.hgetall(key)
@@ -109,6 +118,10 @@ module Hyperion
 
       def meta_key(key)
         "__metadata__#{key}"
+      end
+      
+      def kind_set_key(kind)
+        "__kindset__:#{kind}"
       end
 
       def cast_record(record, metarecord)

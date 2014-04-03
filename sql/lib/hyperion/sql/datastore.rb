@@ -28,6 +28,14 @@ module Hyperion
           end
         end
       end
+      
+      def create(records)
+        with_connection do
+          records.map do |record|
+            execute_save_query(query_builder.build_insert(record), record)
+          end
+        end
+      end
 
       def find_by_key(key)
         with_connection do
