@@ -3,6 +3,10 @@ Hyperion::Redis
 
 A Hyperion datastore for the [Redis](http://redis.io/) database.
 
+## Compatibility Notice
+
+As of commit 728a6c3, this fork is not compatible with existing installations using the Redis store.  The key generation logic was modified, and no longer includes the "kind".
+
 ## Installation
 
 ```ruby
