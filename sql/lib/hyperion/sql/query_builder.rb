@@ -32,8 +32,8 @@ module Hyperion
         table, id = Key.decompose_key(record.delete(:key))
         table = format_table(record.delete(:kind))
         column_values = record.keys.map {|field| "#{format_column(field)} = ?"}
-        query = qb_strategy.normalize_update("UPDATE #{table} SET #{column_values.join(', ')} WHERE #{quote('id')} = #{id}")
-        SqlQuery.new(query, record.values)
+        query = qb_strategy.normalize_update("UPDATE #{table} SET #{column_values.join(', ')} WHERE #{quote('id')} = ?")
+        SqlQuery.new(query, record.values + [id])
       end
 
       def build_select(query)
