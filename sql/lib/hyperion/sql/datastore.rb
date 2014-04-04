@@ -56,8 +56,12 @@ module Hyperion
       end
 
       def delete_by_key(key)
-        with_connection do
-          delete(query_from_key(key))
+        if Key.composed_key?(key)
+          with_connection do
+            delete(query_from_key(key))
+          end
+        else
+          nil
         end
       end
 

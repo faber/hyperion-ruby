@@ -297,6 +297,10 @@ shared_examples_for 'Datastore' do
       api.find_by_kind('testing').should_not include(record_to_delete)
     end
 
+    it 'returns nil when deleting non-existent keys' do
+      expect(api.delete_by_key('made-up')).to be_nil
+    end
+
     context 'filters' do
 
       [
