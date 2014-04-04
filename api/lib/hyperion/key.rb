@@ -23,6 +23,11 @@ module Hyperion
         [decode_key(kind), id]
       end
 
+      def composed_key?(key)
+        kind, id = decompose_key(key)
+        !(kind.nil? || kind == '' || key.nil? || key == '')
+      end
+
       def generate_id
         UUIDTools::UUID.random_create.to_s.gsub(/-/, '')
       end

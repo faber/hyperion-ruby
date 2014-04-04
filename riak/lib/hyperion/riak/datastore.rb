@@ -27,9 +27,13 @@ module Hyperion
       end
 
       def find_by_key(key)
-        kind, riak_key = Hyperion::Key.decompose_key(key)
-        robject = bucket(kind).get(riak_key)
-        record_from_db(kind, robject.key, robject.data)
+        if Hyperion::Key.composed_key?(key)
+          kind, riak_key = Hyperion::Key.decompose_key(key)
+          robject = bucket(kind).get(riak_key)
+          record_from_db(kind, robject.key, robject.data)
+        else
+          nil
+        end
       end
 
       def find(query)

@@ -136,6 +136,10 @@ shared_examples_for 'Datastore' do
       record = api.save({:kind => 'testing', :inti => 5})
       remove_nils(api.find_by_key(record[:key])).should == remove_nils(record)
     end
+
+    it 'returns nil on non-existent keys' do
+      expect(api.find_by_key('made-up')).to be_nil
+    end
   end
 
   context 'find by kind' do

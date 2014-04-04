@@ -38,8 +38,12 @@ module Hyperion
       end
 
       def find_by_key(key)
-        with_connection do
-          find(query_from_key(key)).first
+        if Key.composed_key?(key)
+          with_connection do
+            find(query_from_key(key)).first
+          end
+        else
+          nil
         end
       end
 
