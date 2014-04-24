@@ -13,9 +13,7 @@ module Hyperion
 
       def build_insert(record)
         record = record.dup
-        if record.key?(:key)
-          table, record[:id] = Key.decompose_key(record.delete(:key))
-        end
+        record[:id] = record.delete(:key) if record.key?(:key)
         table = format_table(record.delete(:kind))
         unless record.empty?
           columns = format_array(record.keys.map {|c| format_column(c) })
@@ -29,7 +27,7 @@ module Hyperion
 
       def build_update(record)
         record = record.dup
-        table, id = Key.decompose_key(record.delete(:key))
+        id = record.delete(:key)
         table = format_table(record.delete(:kind))
         column_values = record.keys.map {|field| "#{format_column(field)} = ?"}
         query = qb_strategy.normalize_update("UPDATE #{table} SET #{column_values.join(', ')} WHERE #{quote('id')} = ?")

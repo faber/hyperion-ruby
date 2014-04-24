@@ -26,14 +26,11 @@ module Hyperion
         end
       end
 
-      def find_by_key(key)
-        if Hyperion::Key.composed_key?(key)
-          kind, riak_key = Hyperion::Key.decompose_key(key)
-          robject = bucket(kind).get(riak_key)
-          record_from_db(kind, robject.key, robject.data)
-        else
-          nil
-        end
+      def find_by_key(kind, key)
+        robject = bucket(kind.to_s).get(key.to_s)
+        record_from_db(kind, robject.key, robject.data)
+      rescue ::Riak::ProtobuffsFailedRequest => e
+        raise e unless e.not_found?
       end
 
       def find(query)
@@ -43,9 +40,8 @@ module Hyperion
         end
       end
 
-      def delete_by_key(key)
-        kind, riak_key = Hyperion::Key.decompose_key(key)
-        delete_with_riak_key(kind, riak_key)
+      def delete_by_key(kind, key)
+        delete_with_riak_key(kind.to_s, key.to_s)
         nil
       end
 
@@ -63,33 +59,19 @@ module Hyperion
         mr.run.first
       end
 
-      def pack_key(kind, key)
-        if key
-          kind, riak_key = Hyperion::Key.decompose_key(key)
-          riak_key
-        end
-      end
-
-      def unpack_key(kind, riak_key)
-        if riak_key
-          Hyperion::Key.compose_key(kind, riak_key)
-        end
-      end
-
       private
 
       def create_one(record)
         kind = record[:kind]
-        riak_key = record.key?(:key) ?
-          pack_key(kind, record[:key]) :
-          nil
+        riak_key = record[:key]
         robject = bucket(kind).new(riak_key)
         store(kind, robject, record_to_db(record))
       end
 
       def update_one(record)
-        kind, riak_key = Hyperion::Key.decompose_key(record[:key])
-        robject = bucket(kind).get(riak_key)
+        kind = record[:kind]
+        key = record[:key]
+        robject = bucket(kind).get(key)
         store(kind, robject, robject.data.merge(record_to_db(record)))
       end
 
@@ -146,8 +128,7 @@ module Hyperion
         record.reject {|k, v| [:kind, :key].include?(k)}
       end
 
-      def record_from_db(kind, riak_key, data)
-        key = Hyperion::Key.compose_key(kind, riak_key)
+      def record_from_db(kind, key, data)
         data.merge(:kind => kind, :key => key)
       end
 

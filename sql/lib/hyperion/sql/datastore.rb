@@ -37,13 +37,9 @@ module Hyperion
         end
       end
 
-      def find_by_key(key)
-        if Key.composed_key?(key)
-          with_connection do
-            find(query_from_key(key)).first
-          end
-        else
-          nil
+      def find_by_key(kind, key)
+        with_connection do
+          find(query_from_kind_and_key(kind, key)).first
         end
       end
 
@@ -55,13 +51,9 @@ module Hyperion
         end
       end
 
-      def delete_by_key(key)
-        if Key.composed_key?(key)
-          with_connection do
-            delete(query_from_key(key))
-          end
-        else
-          nil
+      def delete_by_key(kind, key)
+        with_connection do
+          delete(query_from_kind_and_key(kind, key))
         end
       end
 
@@ -78,19 +70,6 @@ module Hyperion
           sql_query = query_builder.build_count(query)
           results = query_executor.execute_query(sql_query)
           db_strategy.process_count_result(results[0])
-        end
-      end
-
-      def pack_key(kind, key)
-        if key
-          table, id = Key.decompose_key(key)
-          id
-        end
-      end
-
-      def unpack_key(kind, key)
-        if key
-          Key.compose_key(kind, key)
         end
       end
 
@@ -118,14 +97,13 @@ module Hyperion
       end
 
       def record_from_db(record, table)
-        record[:key] = Key.compose_key(table, record.delete('id')) if Hyperion.new?(record)
+        record[:key] = record.delete('id') if Hyperion.new?(record)
         record[:kind] = table
         record
       end
 
-      def query_from_key(key)
-        table, id = Key.decompose_key(key)
-        Query.new(table, [Filter.new(:id, '=', id)], nil, nil, nil)
+      def query_from_kind_and_key(kind, key)
+        Query.new(kind, [Filter.new(:id, '=', key)], nil, nil, nil)
       end
     end
   end

@@ -256,8 +256,8 @@ describe Hyperion do
     end
 
     it 'deletes by key' do
-      api.delete_by_key('delete_key')
-      fake_ds.key_queries.first.should == 'delete_key'
+      api.delete_by_key('delete_kind', 'delete_key')
+      fake_ds.key_queries.first.should == ['delete_kind', 'delete_key']
     end
 
     context 'count by kind' do
@@ -278,14 +278,14 @@ describe Hyperion do
 
     context 'find by key' do
       it 'finds by key' do
-        api.find_by_key('key')
-        fake_ds.key_queries.first.should == 'key'
+        api.find_by_key('kind', 'key')
+        fake_ds.key_queries.first.should == ['kind', 'key']
       end
 
       context 'formats records on return from ds' do
         include_examples 'record unpacking', lambda {|record|
           Hyperion.datastore.returns = [record]
-          Hyperion.find_by_key('key')
+          Hyperion.find_by_key('kind', 'key')
         }
       end
     end
@@ -310,26 +310,6 @@ describe Hyperion do
 
       it 'formats the kind' do
         Hyperion::Types.foreign_key(:SPouse).should == :spouse_key
-      end
-
-      it 'asks the current datastore to pack the key' do
-        key = 'the key to pack'
-        Hyperion.save(:kind => :keyed, :spouse_key => key)
-        fake_ds.key_pack_queries.first[:kind].should == :spouse
-        fake_ds.key_pack_queries.first[:key].should == key
-      end
-
-      it 'handles packing nil' do
-        Hyperion.save(:kind => :keyed, :spouse_key => nil)
-        fake_ds.key_pack_queries.first[:key].should == nil
-      end
-
-      it 'asks the current datastore to unpack the key' do
-        key = 'the key to pack'
-        fake_ds.returns = [[{:kind => :keyed, :spouse_key => key}]]
-        Hyperion.save(:kind => :keyed)
-        fake_ds.key_unpack_queries.first[:kind].should == :spouse
-        fake_ds.key_unpack_queries.first[:key].should == key
       end
 
     end

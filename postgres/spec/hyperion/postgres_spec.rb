@@ -89,7 +89,7 @@ describe Hyperion::Postgres do
     it 'escapes strings to be inserted' do
       evil_name = "my evil name' --"
       record = Hyperion.save(:kind => 'testing', :name => evil_name)
-      found_record = Hyperion.find_by_key(record[:key])
+      found_record = Hyperion.find_by_key('testing', record[:key])
       found_record[:name].should == evil_name
     end
 

@@ -27,7 +27,7 @@ module Hyperion
       end
     end
 
-    def find_by_key(key)
+    def find_by_key(kind, key)
       store[key]
     end
 
@@ -41,7 +41,7 @@ module Hyperion
       records
     end
 
-    def delete_by_key(key)
+    def delete_by_key(kind, key)
       store.delete(key)
       nil
     end
@@ -56,14 +56,6 @@ module Hyperion
 
     def count(query)
       find(query).length
-    end
-
-    def pack_key(kind, key)
-      key
-    end
-
-    def unpack_key(kind, key)
-      key
     end
 
     private

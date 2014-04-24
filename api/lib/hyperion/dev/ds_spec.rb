@@ -80,11 +80,11 @@ shared_examples_for 'Datastore' do
     end
     
     it 'saves a hash with an unpacked key and returns it' do
-      unpacked_key = api.datastore.unpack_key('testing', 123)
+      unpacked_key = "123"
       record = api.create({:kind => 'testing', :key => unpacked_key, :name => 'ann'})
       record[:kind].should == 'testing'
       record[:name].should == 'ann'
-      record[:key].should == unpacked_key
+      record[:key].to_s.should == unpacked_key
     end
 
     it 'saves an empty record' do
@@ -134,11 +134,11 @@ shared_examples_for 'Datastore' do
   context 'find by key' do
     it 'finds by key' do
       record = api.save({:kind => 'testing', :inti => 5})
-      remove_nils(api.find_by_key(record[:key])).should == remove_nils(record)
+      remove_nils(api.find_by_key('testing', record[:key])).should == remove_nils(record)
     end
 
     it 'returns nil on non-existent keys' do
-      expect(api.find_by_key('made-up')).to be_nil
+      expect(api.find_by_key('testing', 1)).to be_nil
     end
   end
 
@@ -293,12 +293,12 @@ shared_examples_for 'Datastore' do
     it 'deletes by key' do
       records = api.find_by_kind('testing')
       record_to_delete = records.first
-      api.delete_by_key(record_to_delete[:key]).should be_nil
+      api.delete_by_key(record_to_delete[:kind], record_to_delete[:key]).should be_nil
       api.find_by_kind('testing').should_not include(record_to_delete)
     end
 
     it 'returns nil when deleting non-existent keys' do
-      expect(api.delete_by_key('made-up')).to be_nil
+      expect(api.delete_by_key('testing', 1)).to be_nil
     end
 
     context 'filters' do
@@ -377,8 +377,8 @@ shared_examples_for 'Datastore' do
       account = api.save(:kind => :account)
       account_key = account[:key]
       shirt  = api.save(:kind => :shirt, :account_key => account_key)
-      found_shirt = api.find_by_key(shirt[:key])
-      found_account = api.find_by_key(account_key)
+      found_shirt = api.find_by_key(:shirt, shirt[:key])
+      found_account = api.find_by_key(:account, account_key)
       shirt[:account_key].should == account_key
       found_shirt[:account_key].should == account_key
       found_account[:key].should == account_key

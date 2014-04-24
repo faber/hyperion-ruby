@@ -91,8 +91,8 @@ module Hyperion
   end
 
   # Retrieves the value associated with the given key from the datastore. nil if it doesn't exist.
-  def self.find_by_key(key)
-    unpack_record(datastore.find_by_key(key))
+  def self.find_by_key(kind, key)
+    unpack_record(datastore.find_by_key(kind, key))
   end
 
   # Returns all records of the specified kind that match the filters provided.
@@ -123,8 +123,8 @@ module Hyperion
   end
 
   # Removes the record stored with the given key. Returns nil no matter what.
-  def self.delete_by_key(key)
-    datastore.delete_by_key(key)
+  def self.delete_by_key(kind, key)
+    datastore.delete_by_key(kind, key)
   end
 
   # Deletes all records of the specified kind that match the filters provided.

@@ -23,7 +23,7 @@ module Hyperion
         end
       end
 
-      def find_by_key(key)
+      def find_by_key(kind, key)
         record = @client.hgetall(key)
         return nil if record.empty?
         metarecord = @client.hgetall(meta_key(key))
@@ -40,7 +40,7 @@ module Hyperion
         records
       end
 
-      def delete_by_key(key)
+      def delete_by_key(kind, key)
         kind = @client.hget(key, "kind")
         @client.multi do
           @client.del(key)
@@ -51,20 +51,12 @@ module Hyperion
       end
 
       def delete(query)
-        find(query).each { |record| delete_by_key(record[:key]) }
+        find(query).each { |record| delete_by_key(record[:kind], record[:key]) }
         nil
       end
 
       def count(query)
         find(query).count
-      end
-
-      def pack_key(kind, key)
-        key
-      end
-
-      def unpack_key(kind, key)
-        key
       end
 
       private

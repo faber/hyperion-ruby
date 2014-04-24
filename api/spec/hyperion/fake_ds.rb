@@ -24,8 +24,8 @@ module Hyperion
       returns.shift || []
     end
 
-    def find_by_key(key)
-      @key_queries << key
+    def find_by_key(kind, key)
+      @key_queries << [kind, key]
       returns.shift || nil
     end
 
@@ -34,8 +34,8 @@ module Hyperion
       returns.shift || []
     end
 
-    def delete_by_key(key)
-      @key_queries << key
+    def delete_by_key(kind, key)
+      @key_queries << [kind, key]
       nil
     end
 
@@ -47,14 +47,6 @@ module Hyperion
     def count(query)
       @queries << query
       returns.shift || 0
-    end
-
-    def pack_key(kind, key)
-      @key_pack_queries << {:kind => kind, :key => key}
-    end
-
-    def unpack_key(kind, key)
-      @key_unpack_queries << {:kind => kind, :key => key}
     end
 
   end
